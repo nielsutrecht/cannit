@@ -1,0 +1,21 @@
+server:
+  port: 8080
+  tomcat:
+    max-threads: 2
+spring:
+  datasource:
+    url: jdbc:h2:mem:test
+    username: sa
+    password:
+backup:
+  directory: ./target
+
+responses:
+  general:
+    - trigger: google
+      response: If you had googled "%s" you would've gotten quite a few examples. Is there anything in those examples you don't get? Being a developer means you spend a lot of time doing research.
+    - trigger:  faq
+      response: Please read the FAQ in the sidebar!
+  javahelp:
+    - trigger: faq
+      response: Please read the FAQ in the sidebar!

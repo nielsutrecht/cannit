@@ -1,0 +1,2 @@
+If you had googled "${query}" you would've gotten quite a few examples. Is there anything in those examples you don't
+get? Being a developer means you spend a lot of time doing research.
