@@ -4,13 +4,16 @@ import com.nibado.project.redditcan.repository.TemplateRepository;
 import com.nibado.project.redditcan.repository.domain.Template;
 import com.nibado.project.redditcan.service.exceptions.TemplateNotFoundException;
 import freemarker.cache.TemplateLoader;
+import org.h2.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -64,6 +67,20 @@ public class TemplateService implements TemplateLoader {
 
     @PostConstruct
     public void init() {
-        repository.create("general", "faq", "Please read the FAQ in the sidebar!");
+        repository.create("general", "faq", resource("general/faq"));
+        repository.create("general", "format", resource("general/format"));
+        repository.create("general", "google", Collections.singletonList("query"), resource("general/google"));
+
+        repository.create("javahelp", "faq", resource("javahelp/faq"));
+        repository.create("learnprogramming", "faq", resource("learnprogramming/faq"));
+    }
+
+    private static String resource(final String key) {
+        InputStream ins = TemplateService.class.getResourceAsStream("/responses/" + key + ".txt");
+        try {
+            return IOUtils.readStringAndClose(IOUtils.getReader(ins), -1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

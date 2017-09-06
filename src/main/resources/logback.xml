@@ -14,5 +14,5 @@
         <appender-ref ref="STDOUT" />
     </root>
     <logger name="DEBUG JRAW" level="info"/>
-    <logger name="com.nibado" level="info"/>
+    <logger name="com.nibado" level="debug"/>
 </configuration>

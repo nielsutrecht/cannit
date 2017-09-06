@@ -8,12 +8,10 @@ import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.managers.AccountManager;
-import net.dean.jraw.models.Comment;
-import net.dean.jraw.models.Contribution;
-import net.dean.jraw.models.Listing;
-import net.dean.jraw.models.LoggedInAccount;
+import net.dean.jraw.models.*;
 
-import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,25 +21,20 @@ public class Reddit {
 
     private RedditClient client;
     private FluentRedditClient fluent;
+    private String userName;
 
-    public void login(final String username, final String password) throws OAuthException {
-        Properties properties = new Properties();
-        try {
-            properties.load(Reddit.class.getResourceAsStream("/secret.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Credentials credentials = Credentials.script(
-                username,
-                password,
-                properties.getProperty("clientId"),
-                properties.getProperty("clientSecret"));
-
+    public void login(final RedditCredentials credentials) throws OAuthException {
         client = new RedditClient(USER_AGENT);
-        OAuthData authData = client.getOAuthHelper().easyAuth(credentials);
+        OAuthData authData = client.getOAuthHelper().easyAuth(Credentials.script(
+                credentials.getUser(),
+                credentials.getPassword(),
+                credentials.getClientId(),
+                credentials.getClientSecret()));
         client.authenticate(authData);
 
         fluent = new FluentRedditClient(client);
+
+        this.userName = me().getFullName();
     }
 
     public LoggedInAccount me() {
@@ -70,5 +63,38 @@ public class Reddit {
                 .filter(c -> c instanceof Comment)
                 .map(c -> (Comment) c)
                 .collect(Collectors.toList());
+    }
+
+    public List<Submission> getCannitTopics() {
+        Listing<Submission> submissions = fluent.subreddit("cannit").newest().fetch();
+
+        return submissions.stream()
+                .filter(s -> s.getAuthor().equals(userName))
+                .collect(Collectors.toList());
+    }
+
+    public Optional<Submission> getTodaysLogTopic() {
+        return getCannitTopics()
+                .stream()
+                .filter(s -> s.getTitle().startsWith("log"))
+                .filter(s -> s.getTitle().equals("log " + LocalDate.now().format(DateTimeFormatter.ISO_DATE)))
+                .findAny();
+    }
+
+    public void reply(final Submission submission, final String text) {
+        try {
+            new AccountManager(client).reply(submission, text);
+        } catch (ApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Submission createLogTopic() {
+        String date = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
+        try {
+            return fluent.subreddit("cannit").submit("Log topic for " + date, "log " + date);
+        } catch (ApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

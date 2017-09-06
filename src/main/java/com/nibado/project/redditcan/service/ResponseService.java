@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class ResponseService {
     private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
-    private static final Pattern COMMAND_PATTERN = Pattern.compile("/can ([a-z]+)(.+)");
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("/can ([a-z]+)(.+)?");
 
     private final TemplateService service;
 
@@ -40,6 +41,8 @@ public class ResponseService {
             throw new IllegalArgumentException("Invalid command: " + command);
         }
 
+        log.debug("Apply: {} -> {},{}", command, m.group(1), m.group(2));
+
         String trigger = m.group(1);
 
         com.nibado.project.redditcan.repository.domain.Template template = service.findTemplate(sub, trigger);
@@ -48,13 +51,14 @@ public class ResponseService {
 
         try {
             Template temp = cfg.getTemplate(template.getSub() + "/" + template.getTrigger());
-            Writer out = new OutputStreamWriter(System.out);
-            temp.process(model, out);
+            StringWriter writer = new StringWriter();
+
+            temp.process(model, writer);
+
+            return writer.toString();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        return "";
     }
 
     public Map<String, Object> parseModel(final com.nibado.project.redditcan.repository.domain.Template template, final String params) {

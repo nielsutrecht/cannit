@@ -1,0 +1,8 @@
+Please format your code correctly. [Reddit itself](https://www.reddit.com/r/learnprogramming/wiki/index#wiki_formatting_code)
+supports code formatting by prepending every line of text with 4 spaces. You will get a lot more help if your code is readable.
+
+In addition to that, if your code is more than a few lines it is better to post your code on [Pastebin](https://pastebin.com/)
+(single file) or as a [Gist](https://gist.github.com/). The latter has the benefit, besides supporting multiple files with
+even different languages, that it can be easily cloned by someone who want to try and run your code locally.
+
+To summarise: please format your code and preferably post it as a Gist if it's more than a few lines.

@@ -19,8 +19,11 @@ public class ResponseController {
     }
 
     @GetMapping
-    public Response response(@RequestParam("sub")final String sub, @RequestParam("trigger") final String trigger, @RequestParam("params") final String params) {
-        return new Response(service.applyTemplate("/can " + trigger + " " + params, sub));
+    public Response response(
+            @RequestParam("sub")final String sub,
+            @RequestParam("trigger") final String trigger,
+            @RequestParam(value = "params", required = false) final String params) {
+        return new Response(service.applyTemplate("/can " + trigger + " " + (params == null ? "" : params), sub));
     }
 
     @Value
